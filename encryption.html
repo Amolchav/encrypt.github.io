@@ -1,0 +1,250 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<title>Encryption</title>
+</head>
+<body>
+<canvas id = "canvas"></canvas>
+<script src = "processing.js.txt"></script>
+<script type = "application/processing" data-processing-target = "canvas">
+
+size(400, 400);
+background(0);
+
+var  sceneCount = 1;
+var textBox = function(x, y){
+	this.x = x;
+	this.y = y;
+	this.text = "";
+};
+textBox.prototype.addText = function(t){
+	this.text = this.text + t;
+};
+textBox.prototype.display = function(){
+	noStroke();
+	fill(255);
+	rectMode(CENTER);
+	rect(this.x, this.y, 300, 30, 15);
+	fill(0);
+	textFont(createFont("monospace", 23));
+	textAlign(CENTER, CENTER);
+	text(this.text, this.x, this.y);
+};
+textBox.prototype.clear = function(){
+	this.text = "";
+};
+var clearButton = function(x, y){
+	this.x = x;
+	this.y = y;
+};
+clearButton.prototype.display = function(){
+	noStroke();
+	fill(255);
+	rectMode(CENTER);
+	rect(this.x, this.y, 70, 30, 15);
+	fill(0);
+	textFont(createFont("monospace", 20));
+	textAlign(CENTER, CENTER);
+	text("clear", this.x, this.y);
+};
+var t = new textBox(width/2, 100);
+clearButton.prototype.clk = function(){
+	if(mouseX > this.x-35&&mouseX<this.x+35&&mouseY>this.y-15&&mouseY<this.y+15){
+		t.text = "";
+	}
+};
+var clr = new clearButton(300, 140);
+
+var ekey = 1;
+var encrypt = function(text, k){
+	text = text.toLowerCase();
+	var newText = "";
+	var letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"];
+	var numbers = [];
+	for(var i = 0; i < 26; i++){
+		numbers[i] = i;
+	}
+	for(var i = 0; i < text.length; i++){
+		var c = text.charAt(i);
+		var n = c;
+		n = n.charCodeAt(0);
+		n -= 97;
+		if(n === -65){
+			newText += " ";
+			continue;
+		}
+		n += k;
+		n = n % 26;
+		newText = newText + "" + letters[n];
+	}
+	return newText;
+};
+
+var keyBox = function(x, y){
+	this.x = x;
+	this.y = y;
+	this.key = 0;
+};
+keyBox.prototype.display = function(){
+	noStroke();
+	fill(255);
+	rectMode(CENTER);
+	rect(this.x, this.y, 50, 50, 25);
+	fill(0);
+	textAlign(CENTER, CENTER);
+	textFont(createFont("monospace", 25));
+	text(this.key, this.x, this.y);
+};
+keyBox.prototype.moreDisplay = function(){
+	var X, Y;
+	X = this.x + 25 + 10;
+	Y = this.y - 12.5;
+	fill(255);
+	ellipse(X, Y, 20, 20);
+	fill(0);
+	textAlign(CENTER, CENTER);
+	textFont(createFont("monospace", 17));
+	text("↑", X, Y);
+};
+keyBox.prototype.more = function(){
+	if(this.key <= 25){
+		var X = this.x + 25 + 10;
+		var Y = this.y - 12.5;
+		var d = dist(mouseX, mouseY, X, Y);
+		if(d < 10){
+			this.key++;
+		}
+	}
+};
+keyBox.prototype.lessDisplay = function(){
+	var X = this.x + 25 + 10;
+	var Y = this.y + 12.5;
+	noStroke();
+	fill(255);
+	ellipse(X, Y, 20, 20);
+	fill(0);
+	textAlign(CENTER, CENTER);
+	textFont(createFont("monospace", 17));
+	text("↓", X, Y);
+};
+keyBox.prototype.less = function(){
+	if(this.key > 0){
+		var X = this.x + 25 + 10;
+		var Y = this.y + 12.5;
+		var d = dist(mouseX, mouseY, X, Y);
+		if(d < 10){
+			this.key--;
+		}
+	}
+};
+var k = new keyBox(200, 230);
+var encrypted = new textBox(width/2, 370);
+var button = function(text, x, y, toWhichScene){
+	this.text = text;
+	this.x = x;
+	this.y = y;
+	this.toWhichScene = toWhichScene;
+};
+button.prototype.display = function(){
+	rectMode(CENTER);
+	fill(255);
+	rect(this.x, this.y, 100, 30, 15);
+	fill(0);
+	textAlign(CENTER, CENTER);
+	textFont(createFont("monospace", 20));
+	text(this.text, this.x, this.y);
+};
+button.prototype.clk = function(){
+	if(mouseX>this.x-50&&mouseX<this.x+50&&mouseY>this.y-15&&mouseY<this.y+15){
+		sceneCount = this.toWhichScene;
+	}
+};
+var enc = new button("encrypt", width*1/3, height-100, 2);
+var abt = new button("about", width*2/3, height-100, 3);
+var bk = new button("back", width-55, 20, 1);
+var scene1 = function(){
+	background(0);
+	textFont(createFont("monospace", 50));
+	fill(255);
+	textAlign(CENTER, CENTER);
+	text("Encryption", 200, 200);
+	enc.display();
+	abt.display();
+};
+
+var scene2 = function(){
+	background(0);
+	fill(255);
+	textAlign(CENTER, CENTER);
+	textFont(createFont("monospace", 20));
+	text("Type original text here-", width/2, 50);
+	t.display();
+	clr.display();
+	bk.display();
+	fill(255);
+	textAlign(CENTER, CENTER);
+	textFont(createFont("monospace", 20));
+	text("Key-", width/2, 180);
+	k.display();
+	k.moreDisplay();
+	k.lessDisplay();
+	ekey = k.key;
+	textFont(createFont("monospace", 20));
+	fill(255);
+	textAlign(CENTER, CENTER);
+	text("Encrypted text-", width/2, 320);
+	encrypted.text = encrypt(t.text, ekey);
+	encrypted.display();
+};
+
+var scene3 = function(){
+    background(0);
+    bk.display();
+    fill(255);
+    textAlign(CENTER, CENTER);
+    textFont(createFont("monospace"), 15);
+    text("Encryption is a process by which you can send\nor receive information secretly. It is done by\nincreasing the letter by a certain \"key\".", 200, 93);
+    fill(12, 242, 177);
+    text("Example-", 200, 154);
+    fill(255);
+    text("A --> B, when key is 1 (A+1 = B)", 200, 181);
+    text("D --> F, when key is 2 (D+2 = F)", 200, 220);
+    fill(12, 242, 177);
+    text("Instructions-", 200, 260);
+    fill(255);
+    text("1) Only enter letters", 200, 290);
+    text("2) No special characters or numbers are allowed", 200, 320);
+    text("3) Have a fun time encrypting your message", 200, 350);
+    text(":-)", 200, 380);
+};
+mouseClicked = function(){
+	if(sceneCount === 1){
+		enc.clk();
+		abt.clk();
+	}
+	if(sceneCount === 2){
+		clr.clk();
+		k.more();
+		k.less();
+		bk.clk();
+	}
+	if(sceneCount === 3){
+	    bk.clk();   
+	}
+};
+keyTyped = function(){
+	t.addText(key.toString());
+};
+draw = function(){
+	if(sceneCount === 1){
+		scene1();
+	}else if(sceneCount === 2){
+		scene2();
+	}else if(sceneCount === 3){
+	    scene3();
+	}
+};
+
+</script>
+</body>
+</html>
